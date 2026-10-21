@@ -95,18 +95,42 @@ def refresh_failed_approach(toolkit, molmo, state, recent, live, locator_of, not
     locations are different coordinate references. Unavailable, nonfinite or
     implausibly displaced readings leave the original approach untouched.
     """
-    phrase = next((anchor for name, _, anchor in reversed(recent)
-                   if name in {"move_to", "move_pose"} and anchor in live), None)
+    phrase = next(
+        (
+            anchor
+            for name, _, anchor in reversed(recent)
+            if name in {"move_to", "move_pose"} and anchor in live
+        ),
+        None,
+    )
     if phrase is None:
         return recent
     try:
         if locator_of.get(phrase) == "segment":
-            found = execute(toolkit, "segment", {"prompt": phrase,
-                "camera": "agentview", "step": state.latest_step, "min_score": 0.2})
+            found = execute(
+                toolkit,
+                "segment",
+                {
+                    "prompt": phrase,
+                    "camera": "agentview",
+                    "step": state.latest_step,
+                    "min_score": 0.2,
+                },
+            )
             world = found.get("world_xyz")
-            xy = np.asarray(world[:2], dtype=float) if isinstance(world, list) and len(world) >= 2 else None
+            xy = (
+                np.asarray(world[:2], dtype=float)
+                if isinstance(world, list) and len(world) >= 2
+                else None
+            )
         else:
-            found = locate(molmo, state, state.latest_step, "agentview", prompt_for("survey", phrase))
+            found = locate(
+                molmo,
+                state,
+                state.latest_step,
+                "agentview",
+                prompt_for("survey", phrase),
+            )
             xy = np.asarray(found["xy"], dtype=float) if found else None
         if xy is None or xy.shape != (2,) or not np.isfinite(xy).all():
             return recent
@@ -122,7 +146,11 @@ def refresh_failed_approach(toolkit, molmo, state, recent, live, locator_of, not
                 target = np.asarray(xyz[:2], dtype=float) + delta
                 if np.max(np.abs(target)) > REACH:
                     return recent
-                updated["xyz"] = [round(float(target[0]), 4), round(float(target[1]), 4), xyz[2]]
+                updated["xyz"] = [
+                    round(float(target[0]), 4),
+                    round(float(target[1]), 4),
+                    xyz[2],
+                ]
             shifted.append((name, updated, anchor))
         live[phrase] = xy
         note(f"      recovery refreshed {phrase!r} by {np.linalg.norm(delta):.3f} m")
@@ -508,8 +536,12 @@ def replay(
         if name in {"release", "pi0_pick", "pi0_doubled"}:
             recent.clear()
         elif name in {"move_to", "move_pose", "set_gripper", "rotate_wrist"}:
-            anchor = (entry.get("anchor") if name in {"move_to", "move_pose"}
-                      and entry.get("anchor_distance", 9) <= MAX_ATTACH else None)
+            anchor = (
+                entry.get("anchor")
+                if name in {"move_to", "move_pose"}
+                and entry.get("anchor_distance", 9) <= MAX_ATTACH
+                else None
+            )
             recent.append((name, dict(arguments), anchor))
             recent = recent[-6:]
 

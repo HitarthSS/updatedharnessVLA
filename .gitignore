@@ -35,3 +35,13 @@ checkpoints/
 *.bundle
 .env
 .env.*
+
+# Generated test reports and local machine files.
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+*.log
