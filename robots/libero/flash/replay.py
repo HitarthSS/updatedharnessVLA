@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Modified by HitarthSS: prune unused anchors and refresh failed grasp approaches.
 """One LIBERO Flash plan: what it holds, and how it is replayed.
 
 The program supplies the actions; perception supplies the coordinates. Each anchor
@@ -69,6 +71,65 @@ FLASH_PICK_THRESHOLDS = {
     "gripper_open_thresh": 0.003,
     "descent_thresh": 0.0,
 }
+
+# Frozen before evaluation. Large changes may indicate the wrong object.
+RECOVERY_MAX_SHIFT = 0.08
+
+
+def required_anchors(program: dict) -> set[str]:
+    """Only motion-attached anchors influence this recorded program."""
+    return {
+        entry["anchor"]
+        for entry in program["plan"]
+        if entry["action"] in {"move_to", "move_pose"}
+        and entry.get("anchor") is not None
+        and entry.get("anchor_distance", 9) <= MAX_ATTACH
+        and len(entry.get("arguments", {}).get("xyz") or []) == 3
+    }
+
+
+def refresh_failed_approach(toolkit, molmo, state, recent, live, locator_of, note):
+    """Re-observe one failed pick's anchor and translate its approach in place.
+
+    The original locator is preserved: segmentation centroids and point-model
+    locations are different coordinate references. Unavailable, nonfinite or
+    implausibly displaced readings leave the original approach untouched.
+    """
+    phrase = next((anchor for name, _, anchor in reversed(recent)
+                   if name in {"move_to", "move_pose"} and anchor in live), None)
+    if phrase is None:
+        return recent
+    try:
+        if locator_of.get(phrase) == "segment":
+            found = execute(toolkit, "segment", {"prompt": phrase,
+                "camera": "agentview", "step": state.latest_step, "min_score": 0.2})
+            world = found.get("world_xyz")
+            xy = np.asarray(world[:2], dtype=float) if isinstance(world, list) and len(world) >= 2 else None
+        else:
+            found = locate(molmo, state, state.latest_step, "agentview", prompt_for("survey", phrase))
+            xy = np.asarray(found["xy"], dtype=float) if found else None
+        if xy is None or xy.shape != (2,) or not np.isfinite(xy).all():
+            return recent
+        delta = xy - live[phrase]
+        if np.max(np.abs(xy)) > REACH or np.linalg.norm(delta) > RECOVERY_MAX_SHIFT:
+            note(f"      recovery reading for {phrase!r} rejected")
+            return recent
+        shifted = []
+        for name, arguments, anchor in recent:
+            updated = dict(arguments)
+            if anchor == phrase and name in {"move_to", "move_pose"}:
+                xyz = arguments["xyz"]
+                target = np.asarray(xyz[:2], dtype=float) + delta
+                if np.max(np.abs(target)) > REACH:
+                    return recent
+                updated["xyz"] = [round(float(target[0]), 4), round(float(target[1]), 4), xyz[2]]
+            shifted.append((name, updated, anchor))
+        live[phrase] = xy
+        note(f"      recovery refreshed {phrase!r} by {np.linalg.norm(delta):.3f} m")
+        return shifted
+    except (RuntimeError, ValueError, TypeError) as error:
+        note(f"      recovery observation unavailable: {error}")
+        return recent
 
 
 def profile(
@@ -266,7 +327,10 @@ def replay(
     opening = look()
 
     live: dict[str, np.ndarray] = {}
+    needed = required_anchors(program)
     for phrase in reference:
+        if phrase not in needed:
+            continue
         if locator_of.get(phrase) == "segment":
             # One phrase the segmenter cannot place must not end the episode:
             # the rest of the anchors, and the actions that hang off them,
@@ -351,7 +415,7 @@ def replay(
 
     offset = np.zeros(2)
     held_phrase = "object"
-    recent: list[tuple[str, dict]] = []
+    recent: list[tuple[str, dict, str | None]] = []
     skip_suffix = False
     for entry in plan:
         if finished():
@@ -411,7 +475,10 @@ def replay(
                 for _ in range(PICK_ATTEMPTS - 1):
                     if finished():
                         break
-                    for again, again_args in recent:
+                    recent = refresh_failed_approach(
+                        toolkit, molmo, state, recent, live, locator_of, note
+                    )
+                    for again, again_args, _anchor in recent:
                         execute(toolkit, again, dict(again_args))
                     raw = execute(toolkit, name, dict(arguments))
                     look()
@@ -441,7 +508,9 @@ def replay(
         if name in {"release", "pi0_pick", "pi0_doubled"}:
             recent.clear()
         elif name in {"move_to", "move_pose", "set_gripper", "rotate_wrist"}:
-            recent.append((name, dict(arguments)))
+            anchor = (entry.get("anchor") if name in {"move_to", "move_pose"}
+                      and entry.get("anchor_distance", 9) <= MAX_ATTACH else None)
+            recent.append((name, dict(arguments), anchor))
             recent = recent[-6:]
 
     return {"done": finished(), "anchors": len(live), "plan": len(plan)}

@@ -1,3 +1,13 @@
+# HarnessVLA：RPent 自适应 Flash 实验分支
+
+这是 HitarthSS 基于 [RLinf/RPent](https://github.com/RLinf/RPent) 提交 `945682a55c4e17d6bb686a80b162ff801e768157` 的实验分支，保留原有 Apache-2.0 许可证与提交历史。
+
+更新后的 LIBERO Flash 跳过未使用的视觉锚点，并在抓取失败后重新定位接近路径；Pi0.5、SAM3 和 Molmo2-8B 权重保持冻结。参见[中文说明](ADAPTIVE_FLASH.zh-CN.md)和[完整英文设置与评测说明](ADAPTIVE_FLASH.md)。
+
+**实验状态：**初步运行采用 RPent 默认的 10,000 个仿真步，不能证明在 LIBERO-PRO 标准时域内优于基准。请显式设置各套件的步数上限。下方保留的性能声明与排行榜属于上游 RPent，不是本分支复现的成绩。新增内容不包含密钥、模型权重或私有运行产物。
+
+---
+
 <div align="center">
   <img src="https://github.com/RLinf/misc/raw/main/pic/rpent_logo.png" alt="RPent-logo" width="520"/>
 </div>

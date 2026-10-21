@@ -27,3 +27,11 @@ build/
 
 # Standalone calibration environment.
 .venv-calibration/
+
+# Adaptive Flash local experiment artifacts.
+.venv-*/
+runs/
+checkpoints/
+*.bundle
+.env
+.env.*

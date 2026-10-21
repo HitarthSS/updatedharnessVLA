@@ -1,3 +1,15 @@
+# HarnessVLA: Adaptive Flash for RPent
+
+This is HitarthSS's experimental fork of [RLinf/RPent](https://github.com/RLinf/RPent), based on commit `945682a55c4e17d6bb686a80b162ff801e768157`.
+
+The updated LIBERO Flash harness skips unused anchors and re-localizes failed grasp approaches using the same frozen Pi0.5, SAM3 and Molmo2-8B models. See [the changes, setup commands, tests and evaluation limitations](ADAPTIVE_FLASH.md).
+
+**Status:** experimental. Initial runs used RPent's 10,000-step default and do not establish improvement under LIBERO-PRO's reference horizons. Use explicit suite-specific limits. Upstream performance claims and leaderboard content below describe upstream RPent, not results achieved by this fork.
+
+The original Apache-2.0 license and upstream history are retained. No credentials, model weights or private run artifacts are included in the added changes.
+
+---
+
 <div align="center">
   <img src="https://github.com/RLinf/misc/raw/main/pic/rpent_logo.png" alt="RPent-logo" width="520"/>
 </div>
