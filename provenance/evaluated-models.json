@@ -1,0 +1,7 @@
+{
+  "documented_model_configuration": [
+    "RLinf Pi0.5 LIBERO-130 SFT, SAM3 and allenai/Molmo2-8B; all frozen.",
+    "Released RLinf/RPent-memory at 47f301ef33bf8d0e8c770342f16b3c39c6a0e8c1, libero/GPT_5.5_xhigh. Replaying these files makes no new GPT call."
+  ],
+  "weights_included": false
+}

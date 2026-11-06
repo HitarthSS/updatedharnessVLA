@@ -1,0 +1,22 @@
+{
+  "bash_syntax_files": 0,
+  "checked_at_utc": "2026-11-06T20:50:50.812226+00:00",
+  "core_entrypoint": "robots/libero/flash/replay.py",
+  "core_matches_recorded_experiment": true,
+  "core_source_sha256": "4ecd9816099a57a01f7cd9fc18dda553fef802180a480ffcf9dd74c403988063",
+  "cpu_tests": {
+    "executed": false,
+    "reason": "Upstream simulator/Torch dependencies are not installed by this source-only publication; syntax and source hashes checked instead."
+  },
+  "existing_remote_core_verified_at_commit": "583b332a9708df6178e5b6260ca07bae5f7acca6",
+  "full_gpu_benchmark_revalidated": false,
+  "limitations": [
+    "Syntax and CPU checks do not establish fresh-machine numerical parity or benchmark reproduction."
+  ],
+  "markdown_paths_checked": true,
+  "model_api_calls": 0,
+  "passed": true,
+  "publication_only": true,
+  "python_ast_files": 1,
+  "secret_patterns_checked": true
+}

@@ -1,0 +1,22 @@
+{
+  "excluded_from_self_hash": [
+    ".gitignore",
+    "provenance/export.json",
+    "provenance/validation.json"
+  ],
+  "files": {
+    "ADAPTIVE_FLASH.md": "2c6769c093d1073ac7bbf3eb0dc54faacb5566038d7fc533e40ce5ab436d0a2e",
+    "EVALUATION.md": "58a84c2988802d2ff5e60a289434b04e510b4b34e6c87f6ddb3a80e6f8ccabd2",
+    "NOTICE.md": "0f913bc950853db94f5f333a3210a4a629abcbd4b4f45e5d1903f882a8b15273",
+    "PUBLICATION.json": "e55b323771b854af68d869051d4b4b3339a0bad9c646da3e0974dbe0f2f000bf",
+    "README.md": "e69c982bde62445ab58ceecaa1f20a288716e6939ed30fb556d2ee9c252f3a87",
+    "README.zh-CN.md": "0c880ae819d40249b67d1c7f3a08210745baeaf5f787dbfe4d6f0d057425d347",
+    "configs/method.json": "55556208358c160d99d9fbebbc140d907d724de10d6dc56cc88c693a5350cbd2",
+    "docs/INTEGRATION.md": "966b4a3ad0a4e04448547f7cb31b2446bf0c142cf7b7811f2cb69ac4710578fd",
+    "provenance/evaluated-models.json": "cdbef0d75961317648e50a1d831fac01d619f2ee039dfe67271caa3c02b1fbe4",
+    "provenance/original-source-hashes.json": "52fadd1f361c5753e0f32bc0ddb89fab79fc77aacc1ed5f25112794dd19eba6b",
+    "provenance/upstream.json": "b2824d9d27e474de872d18e0d522ce52a1adbb0baa08138bb6899fc66ec33de0",
+    "tools/verify_export.py": "c0f2a4ad4b66c20d59111f7a4005ac44d8ba4b795806cd8d8125fdff185bca2e"
+  },
+  "note": "Only exported files are covered. Existing upstream files are preserved. .gitignore is merged on the two existing repositories."
+}

@@ -45,3 +45,20 @@ coverage.xml
 .ruff_cache/
 .DS_Store
 *.log
+
+# Harness publication artifacts
+.venv*/
+!.env.example
+*.auth
+*.pem
+*.key
+models/
+cache/
+upstream/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.mp4
+*.zip
+*.tar*

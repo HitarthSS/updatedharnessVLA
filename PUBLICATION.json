@@ -1,0 +1,10 @@
+{
+  "description": "My harness for Harness VLA / RPent Flash; frozen-policy source, integration notes, horizons and qualified pilot results.",
+  "existing_repository": true,
+  "main_entrypoint": "robots/libero/flash/replay.py",
+  "new_visibility": "private",
+  "owner": "HitarthSS",
+  "paper": "https://arxiv.org/abs/2607.08448",
+  "repository": "updatedharnessVLA",
+  "requires_paid_api": false
+}

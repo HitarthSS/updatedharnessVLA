@@ -1,3 +1,9 @@
+> 本仓库包含 **my harness** 的实验修改及原始 RPent 源码。修改点包括跳过未使用的视觉锚点，以及在抓取失败后重新定位接近锚点（平移最多 8 cm，保持姿态及原始三次尝试上限）。策略权重保持冻结。
+>
+> 论文 Flash Mode (max) 报告 **581/800（72.63%）**，采用回顾性最优记忆卡选择。历史原始回放中，作者方法为 **292/660（44.24%）**，my harness 为 **362/750（48.27%）**；两者覆盖不同，且继承了 10,000 动作保护上限，不能据此宣称公平对比下的提升或完整复现。严格参考动作上限为 Spatial 220、Object 280、Goal 300、Long 520，所有恢复动作必须计入。
+>
+> 发布的版本使用冻结的 Pi0.5、SAM3、Molmo2 和已有记忆文件，回放不需要新的 GPT API 调用。模型、数据和运行环境不随仓库发布。本次仅验证源代码打包与文档，没有重新运行完整 GPU 评估。完整英文结果、限制、安装入口与验证方式见 [README.md](README.md)、[EVALUATION.md](EVALUATION.md) 和 [ADAPTIVE_FLASH.md](ADAPTIVE_FLASH.md)。
+
 # Updated HarnessVLA：RPent 自适应 Flash
 
 [English](README.md) · [完整算法与复现指南](ADAPTIVE_FLASH.md)

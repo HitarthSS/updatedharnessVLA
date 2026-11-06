@@ -1,0 +1,25 @@
+{
+  "note": "Source collection hashes; exported locations may differ. Core algorithms are copied without behavior changes.",
+  "source_files": [
+    {
+      "bytes": 21805,
+      "file": "robots/libero/flash/replay.py",
+      "sha256": "4ecd9816099a57a01f7cd9fc18dda553fef802180a480ffcf9dd74c403988063"
+    },
+    {
+      "bytes": 4533,
+      "file": "tests/unit_tests/robots/libero/test_adaptive_replay.py",
+      "sha256": "3f84f23924c47034d513402d15a74b2ece1d8ac4630b816e27cc92d34b4261f9"
+    },
+    {
+      "bytes": 6959,
+      "file": "ADAPTIVE_FLASH.md",
+      "sha256": "2c6769c093d1073ac7bbf3eb0dc54faacb5566038d7fc533e40ce5ab436d0a2e"
+    },
+    {
+      "bytes": 11357,
+      "file": "LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
+  ]
+}

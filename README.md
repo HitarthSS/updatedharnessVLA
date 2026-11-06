@@ -1,111 +1,97 @@
-# Updated HarnessVLA: Adaptive Flash for RPent
+# My harness for Harness VLA / RPent Flash
 
-[简体中文](README.zh-CN.md) · [Implementation and reproduction guide](ADAPTIVE_FLASH.md)
+Experimental, frozen-policy harness code for the [paper](https://arxiv.org/abs/2607.08448). The evaluated behavior is in [`robots/libero/flash/replay.py`](robots/libero/flash/replay.py). Original authorship and source are credited in [NOTICE.md](NOTICE.md).
 
-This repository contains HitarthSS's experimental improvements to the LIBERO
-Flash harness in [RLinf/RPent](https://github.com/RLinf/RPent), the framework
-behind [Harness VLA](https://arxiv.org/abs/2607.08448). It keeps the robot policy
-frozen and changes how released action plans use perception and recover from
-failed grasps.
+## Results
 
-**Evaluation status:** the implementation has offline regression coverage.
-Initial simulator runs used RPent's 10,000-action default, so they do not establish
-an improvement under the benchmark's reference horizons. No benchmark-beating
-success rate or measured end-to-end speedup is claimed.
+| Reference | Result |
 
-## What changed
-
-- **Skip unused anchors:** localize only visual anchors attached to valid motion
-  commands. In the inspected released corpus, this removes 42 of 206 surveyed
-  anchors across 27 of 78 plans. This is a reduction in localization work, not a
-  measured runtime improvement.
-- **Refresh failed grasp approaches:** after a failed pick, re-localize its
-  approach anchor using the latest observation and the original SAM3 or Molmo
-  locator. Translate the approach while preserving height and orientation.
-  Reject invalid readings, shifts over 8 cm, and unreachable targets.
-- **Keep the original retry budget:** at most three pick attempts, within the
-  same episode. A successful first pick adds no recovery perception query.
-
-The change uses released plans, RGB-D observations and calibration, robot state,
-and grasp feedback. It requires no policy training or simulator object-pose truth.
-
-## Models and inference
-
-The experiment uses frozen **Pi0.5**, **SAM3**, and **Molmo2-8B**, together with
-released `RLinf/RPent-memory` plans. The released plans were generated upstream
-with GPT-5.5; replaying them with `--planner flash` makes no new GPT, Claude, or
-Codex planner calls. Model revisions and the unrecorded SAM3 download revision
-are documented in [the model manifest](ADAPTIVE_FLASH.md#models-and-memory).
-
-## Set up and run
-
-Use a Linux machine with NVIDIA GPUs, the LIBERO-PRO assets, and the model
-checkpoints. Start with this checkout:
-
-```bash
-git clone https://github.com/HitarthSS/updatedharnessVLA.git
-cd updatedharnessVLA
-```
-
-Follow the included [LIBERO installation guide](docs/source-en/rst_source/simulators/libero.rst)
-for the simulator and Pi0.5/SAM3 environment. Then follow the
-[Adaptive Flash run instructions](ADAPTIVE_FLASH.md#run) to install Molmo in its
-separate environment, start its service, and execute an episode with
-`--planner flash` and an explicit `--max-episode-steps`.
-
-Use the suite's reference simulator-action budget:
-
-| Suite family | Maximum actions |
-| --- | ---: |
-| Spatial | 220 |
-| Object | 280 |
-| Goal | 300 |
-| Long | 520 |
-
-These limits count native simulator actions, not wall-clock time. A 1.5× budget
-is a separate experimental condition. Compare the original harness and this
-variant using identical models, frozen plans, tasks, seeds, and action budgets.
-Use upstream commit `945682a55c4e17d6bb686a80b162ff801e768157` for the original
-Flash implementation.
-
-Report success from the native environment signal, retain errors and unavailable
-cases, and report actual coverage. Initial runs used seeds 0–9 rather than the
-paper's 1–10; the installed assets also had three empty initial-state files and
-two missing complete Flash plans. See the
-[evaluation limitations](ADAPTIVE_FLASH.md#horizon-and-evaluation-limitations)
-before comparing against published numbers. Shared GPU contention also limits
-latency comparisons.
-
-## Code and tests
-
-| Path | Purpose |
 | --- | --- |
-| [robots/libero/flash/replay.py](robots/libero/flash/replay.py) | Adaptive replay implementation |
-| [tests/unit_tests/robots/libero/test_adaptive_replay.py](tests/unit_tests/robots/libero/test_adaptive_replay.py) | Offline regression tests |
-| [ADAPTIVE_FLASH.md](ADAPTIVE_FLASH.md) | Algorithm, pinned assets, service commands, and evaluation protocol |
-| [docs/](docs/) | Retained upstream setup and framework documentation |
 
-With the test dependencies installed, run:
+| Paper / official release | Flash Mode (max): 581/800 (72.63%), retrospective best-card selection |
 
-```bash
-python -m pytest tests/unit_tests/robots/libero \
-  tests/unit_tests/rpent/planner/test_api_contracts.py -q
+| Our run of the authors' harness | Historical raw sweep: 292/660 (44.24%) |
+
+| **My harness** | **Historical raw sweep: 362/750 (48.27%)** |
+
+
+Historical single-card LIBERO-PRO replay sweeps with unequal executed coverage; these rates are not a matched improvement comparison.
+
+
+These are reduced or explicitly qualified experiments. They do not establish full-paper reproduction or a confirmed benchmark win. See [evaluation details](EVALUATION.md) and the provenance in [provenance/](provenance/).
+
+## What my harness changes
+
+1. Skip perception anchors that are not attached to any executed motion.
+
+2. After a failed grasp, re-localize its approach anchor with the same SAM3 or Molmo locator.
+
+3. Bound translations to 8 cm, preserve orientation and the original three-attempt limit, and add no recovery query after a successful first grasp.
+
+
+Categories: `observation_grounding`, `execution_monitoring`, `uncertainty_compute`.
+
+## Models and inputs
+
+- RLinf Pi0.5 LIBERO-130 SFT, SAM3 and allenai/Molmo2-8B; all frozen.
+
+- Released RLinf/RPent-memory at 47f301ef33bf8d0e8c770342f16b3c39c6a0e8c1, libero/GPT_5.5_xhigh. Replaying these files makes no new GPT call.
+
+
+Policy weights remain frozen. Model checkpoints and benchmark assets must be obtained from their original releases under their own access terms. No paid LLM/VLM API is required by the published variant.
+
+## Start here
+
+1. Use a Linux GPU host for simulator/model evaluation. Read the [pinned upstream setup](https://github.com/RLinf/RPent) before installing its model stack.
+2. Controller dependency: Use the RPent LIBERO extras documented in ADAPTIVE_FLASH.md.
+3. Inspect `configs/method.json` and `provenance/upstream.json`.
+4. Verify the source-only export and inspect the core API:
+
+```sh
+python3 tools/verify_export.py
+pytest tests/unit_tests/robots/libero tests/unit_tests/rpent/planner/test_api_contracts.py -q
 ```
 
-The focused development check passed 174 tests. Unit tests verify software
-behavior; they do not establish benchmark performance.
 
-## Scope and attribution
+CPU checks validate code behavior or packaging only. They do not run the robot benchmark or demonstrate numerical parity on a new GPU/runtime.
 
-This is an RPent-based research fork, based on upstream commit
-`945682a55c4e17d6bb686a80b162ff801e768157`. The original framework source,
-documentation, license, and commit history are retained; upstream leaderboard
-pages describe upstream results. The original project overview remains available
-in the [upstream README at the base revision](https://github.com/RLinf/RPent/blob/945682a55c4e17d6bb686a80b162ff801e768157/README.md).
-Changes made here are described above and in
-[ADAPTIVE_FLASH.md](ADAPTIVE_FLASH.md).
+## Integrate with the frozen policy
 
-The published source excludes experiment queues, credentials, model weights,
-logs, videos, and generated coverage data. HexaShell and RoboHarness experiments
-are separate projects. RPent's original authorship and [Apache-2.0 license](LICENSE)
-are preserved.
+Read [the integration contract and arm definitions](docs/INTEGRATION.md).
+
+Use the existing RPent CLI with --planner flash, the pinned memory and model services, plus an explicit --max-episode-steps for the chosen suite. See ADAPTIVE_FLASH.md for complete commands.
+
+
+The core harness is reusable. Integration snapshots and historical experiment drivers are included for inspection; full fresh-machine simulator reproduction has not been revalidated during this publication. Prepare the pinned native environment and required assets before using those drivers. No benchmark is automatically launched by cloning, importing, or verifying this repository.
+
+## Evaluation budget
+
+Original sweeps inherited a 10,000-action guard. Strict reference caps are Spatial 220, Object 280, Goal 300 and Long 520; set them explicitly.
+
+
+Use identical tasks, initial states, seeds, models and budgets for the authors' harness and my harness. Charge every executed recovery/intervention to the action limit. Separate development and final cases, freeze the design before evaluation, and report all completed matched cases.
+
+## Repository map
+
+- `robots/libero/flash/replay.py`: main harness behavior.
+- `configs/`: method and evaluation metadata.
+- `provenance/`: source/model pins and export hashes.
+- `tools/verify_export.py`: offline source integrity check.
+- `reference/`, `integration/`, or `experiments/`, when present: native-loop snapshots.
+
+## Known limitations
+
+- No aggregate benchmark improvement is established.
+
+- Published max-card selection and our raw sweeps are different procedures.
+
+- Missing state files/cards, seed differences, and unknown original SAM3 download revision remain documented gaps.
+
+- The before/after video examples are outcome-selected illustrations, not an aggregate replication.
+
+
+Shared-GPU wall-clock measurements are descriptive. New checkpoints, a new serving runtime, different seeds or changed horizon enforcement require a newly labeled comparison.
+
+## Publication checks
+
+Source syntax and recorded-core hashes checked. All exported Python parses, shell scripts pass `bash -n`, relative documentation links resolve, and source files pass a credential-pattern scan. See [validation](provenance/validation.json). A complete GPU benchmark was not rerun for this publication.

@@ -1,0 +1,16 @@
+{
+  "categories": [
+    "observation_grounding",
+    "execution_monitoring",
+    "uncertainty_compute"
+  ],
+  "entrypoint": "robots/libero/flash/replay.py",
+  "horizon": "Original sweeps inherited a 10,000-action guard. Strict reference caps are Spatial 220, Object 280, Goal 300 and Long 520; set them explicitly.",
+  "models": [
+    "RLinf Pi0.5 LIBERO-130 SFT, SAM3 and allenai/Molmo2-8B; all frozen.",
+    "Released RLinf/RPent-memory at 47f301ef33bf8d0e8c770342f16b3c39c6a0e8c1, libero/GPT_5.5_xhigh. Replaying these files makes no new GPT call."
+  ],
+  "paid_api_calls_required": 0,
+  "scope": "Historical single-card LIBERO-PRO replay sweeps with unequal executed coverage; these rates are not a matched improvement comparison.",
+  "trainable_parameters": 0
+}
